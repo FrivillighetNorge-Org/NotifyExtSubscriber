@@ -20,7 +20,7 @@ deployment:
       - ./scripts/ci-build.sh
       - gsutil cp deploy/startup.sh gs://notifythirdparty-service/
       - gsutil cp app.tar.gz gs://notifythirdparty-service/
-      - 'gcloud compute instance-groups list-instances  email-group-1 --zone europe-west1-b | tail -n +2 | grep -o "^\S*" | xargs -L1 gcloud compute instances reset --zone europe-west1-b'
+      - 'gcloud compute instance-groups list-instances  subscriber-group-1 --zone europe-west1-b | tail -n +2 | grep -o "^\S*" | xargs -L1 gcloud compute instances reset --zone europe-west1-b'
 general:
   artifacts:
     - "app.tar.gz"
