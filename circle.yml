@@ -1,0 +1,26 @@
+machine:
+  node:
+    version: 8.0.0
+
+
+checkout:
+  post:
+    - echo $SERVICE_ACCOUNT > ~/service-account.json
+    - gcloud auth activate-service-account --key-file ~/service-account.json
+    - gcloud config set project frivillighetsportalen-1084
+
+test:
+  override:
+    - ./scripts/ci-test.sh
+
+deployment:
+  production:
+    branch: master
+    commands:
+      - ./scripts/ci-build.sh
+      - gsutil cp deploy/startup.sh gs://notifythirdparty-service/
+      - gsutil cp app.tar.gz gs://notifythirdparty-service/
+      - 'gcloud compute instance-groups list-instances  email-group-1 --zone europe-west1-b | tail -n +2 | grep -o "^\S*" | xargs -L1 gcloud compute instances reset --zone europe-west1-b'
+general:
+  artifacts:
+    - "app.tar.gz"

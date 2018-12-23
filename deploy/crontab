@@ -1,0 +1,5 @@
+#!/bin/bash
+LOG_DIR=/var/log/notifythirdparty
+APP_NAME=notifythirdparty
+journalctl -u $APP_NAME >> $LOG_DIR/$APP_NAME.log
+gsutil -m rsync -r $LOG_DIR gs://friport-backup/logs/$APP_NAME/$(hostname)/

@@ -1,0 +1,16 @@
+[Unit]
+Description=Notifies third parties of any Frivillig subscriptions
+
+[Service]
+ExecStart=/usr/local/bin/node /opt/notifyThirdParty/index.js
+Restart=always
+RestartSec=10
+WorkingDirectory=/opt/notifyThirdParty
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=fn-notifyThirdParty
+User=email
+Environment=NODE_ENV=production PORT=8081
+
+[Install]
+WantedBy=multi-user.target
