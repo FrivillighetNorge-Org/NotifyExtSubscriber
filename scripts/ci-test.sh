@@ -7,5 +7,5 @@ cd server
 npm install > /dev/null
 mongo friport --eval "db.dropDatabase();"
 
-npm test
-npm run integration
+# npm test
+# npm run integration
