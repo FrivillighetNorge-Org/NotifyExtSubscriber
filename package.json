@@ -1,0 +1,16 @@
+{
+    "name": "frivillig-notifyextsubscriber",
+    "version": "1.0.0",
+    "description": "Notifies third parties of any new subscribers",
+    "main": "index.js",
+    "scripts": {
+      "test": "NODE_ENV=test mocha *.spec.js ./**/*.spec.js",
+      "integration": "NODE_ENV=test mocha -r testSetup *.integration.js ./**/*.integration.js"
+    },
+    "keywords": [
+      "Frivillig.no"
+    ],
+    "author": "Anil Dhiman",
+    "license": "ISC"
+  }
+  
