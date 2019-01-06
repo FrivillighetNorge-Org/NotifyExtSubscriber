@@ -2,13 +2,13 @@
 export DEBIAN_FRONTEND=noninteractive
 
 BINARY_DIR="/tmp/bin"
-APP_DIR="/opt/notifythirdparty"
-APP_USER="notifythirdparty"
-LOG_FILE="notifythirdparty.log"
+APP_DIR="/opt/notifyextsubscriber"
+APP_USER="notifyextsubscriber"
+LOG_FILE="notifyextsubscriber.log"
 
 #COPY FILES FROM CLOUD STORAGE TO OUR VM
 mkdir -p ${BINARY_DIR}
-gsutil -m cp -R gs://notifythirdparty-service/* ${BINARY_DIR}
+gsutil -m cp -R gs://notifyextsubscriber-service/* ${BINARY_DIR}
 
 #GCLOUD
 export CLOUD_SDK_REPO=cloud-sdk-`lsb_release -c -s`
@@ -48,26 +48,24 @@ chmod -R 750 ${APP_DIR}
 
 # INSTALL NPM MODULES
 # cd ${APP_DIR}
-# echo "Installing NPM modules"
-# npm install > /dev/null
-
+                        # echo "1234wwwwwwww
 #CRONTAB BACKUP LOGS
 echo "Setting up Crontab for backup of logs"
 cp ${APP_DIR}/deploy/crontab /etc/cron.daily/frivillig-logrotation
 
 # MAKE LOG DIR WRITABLE FOR APP
 echo "Setting correct permissions for application logs (/var/log/notifythirdparty/${LOG_FILE})"
-mkdir /var/log/notifythirdparty/
-:> /var/log/notifythirdparty/${LOG_FILE}
-chown ${APP_USER} /var/log/notifythirdparty/${LOG_FILE}
+mkdir /var/log/notifyextsubscriber/
+:> /var/log/notifyextsubscriber/${LOG_FILE}
+chown ${APP_USER} /var/log/notifyextsubscriber/${LOG_FILE}
 
 # MOVE OVER PRODUCTION CONFIGURATION FILE
 echo "Copy production configuration files (${APP_DIR}/config/index.js)"
 cp ${BINARY_DIR}/config.js ${APP_DIR}/config/index.js
 
-# ADD SERVICE FILE FOR STATS
+# ADD SERVICE FILE
 echo "Setting up systemd service file"
-cp ${APP_DIR}/deploy/notifythirdparty.service /etc/systemd/system/
+cp ${APP_DIR}/deploy/notifyextsubscriber.service /etc/systemd/system/
 
 # ADD SERVICE ACCOUNT FILE FOR GOOGLE ANALYTICS INTEGRATION
 echo "Copying over service-account.json for Google Analytics integration"
@@ -80,10 +78,11 @@ rm -rf ${BINARY_DIR}
 
 # This script can be run on a machine that already has our service enabled and running, so we must take that into consideration.
 # is-enabled returns 0 if the service is enabled and 1 if it is not enabled.
-systemctl is-enabled notifythirdparty.service
+systemctl is-enabled notifyextsubscriber.service
 if [ $? -ne 0 ]; then
-    systemctl restart notifythirdparty
+    systemctl restart notifyextsubscriber
 else
-    systemctl enable notifythirdparty
-    systemctl start notifythirdparty
+    systemctl enable notifyextsubscriber
+    systemctl start notifyextsubscriber
 fi
+

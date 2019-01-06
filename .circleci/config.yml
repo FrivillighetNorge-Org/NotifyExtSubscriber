@@ -45,3 +45,16 @@ workflows:
           filters:
             branches:
               only: master
+
+deploy:
+    docker:
+      - image: google/cloud-sdk:latest
+    steps:
+            - attach_workspace:
+                at: /tmp/workspace
+            - run: echo $SERVICE_ACCOUNT > ~/service-account.json
+            - run: gcloud auth activate-service-account --key-file ~/service-account.json
+            - run: gcloud config set project frivillighetsportalen-1084
+            - run: gsutil cp /tmp/workspace/deploy/startup.sh gs://notifyextsubscriber-service/
+            - run: gsutil cp /tmp/workspace/app.tar.gz gs://notifyextsubscriber-service/
+            - run: 'gcloud compute instance-groups list-instances notifyextsubscriber-group-1 --zone europe-west1-b | tail -n +2 | grep -o "^\S*" | xargs -L1 gcloud compute instances reset --zone europe-west1-b'
