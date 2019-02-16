@@ -6,19 +6,22 @@ const request = require('request');
 var ObjectId = require('mongodb').ObjectID;
 // Initialize WebHooks module.
 var WebHooks = require('node-webhooks');
+var urlGetDistricts = "";
 
 // Initial webhook module from on-disk database
 var webhooks = new WebHooks({
     db: './webHooksDB.json', // json file that store webhook URLs
     httpSuccessCodes: [200, 201, 202, 203, 204], // optional success http status codes
-})
+});
 
 // Alternatively, initialize webhooks module with object; changes will only be
 // made in-memory
 
 webHooks = new WebHooks({
-    db: {"addPost": ["http://localhost:9100/posts"]}, //just an example
-})
+    db: {"addPost": ["http://localhost:9100/posts"]} //just an example
+});
+
+
 
 // sync instantation - add a new webhook called 'shorname1'
 
@@ -46,6 +49,30 @@ var connstr = "mongodb://"
 ;
 
 
+
+/* 
+getdata = function(){
+    var options = {
+        method: 'GET',
+        url: 'https://dibaservicestest.rodekors.no/webapi/api/district',
+        headers: {
+            'Content-Type': 'application/json',
+            'crmaccesstoken': 'mup38/AiZfjFJTcy4FoqAg=='
+        }
+      };
+      
+      request(options, function (err, res, body) {
+        if (err) {
+          console.log('Error :', err);
+          return;
+        }
+        console.log(' Body :', body);
+      
+      });
+};
+ */
+//getdata();
+
 MongoClient.connect(connstr,{ useNewUrlParser: true })
     .then(client => {
         console.log("Connected correctly to server");
@@ -66,32 +93,100 @@ MongoClient.connect(connstr,{ useNewUrlParser: true })
                 if (err) throw err;
                 if (enrollment){ 
                     currentWebhooks = [];
-                    //lookup webhook collection and see if enrollment.orgId matches any of the 
-                    db.collection("webhook").find({"organizationId" : ObjectId(enrollment.organizationId)}, function(err, webhooks) {
-                        if (err) throw err;
-                        if (webhooks){
-                            webhooks.forEach(function(entry) {
-                                currentWebhooks.push(entry)
-                            }); 
-                        }
-                        //if webhooks configured for given org
-                        if(currentWebhooks.length > -1){
-                            frivillig.FirstName = enrollment.name;
-                            frivillig.Email = enrollment.email;
-                            frivillig.MobilePhone = enrollment.phoneNumber;
-                            frivillig.AddressLine1 = enrollment.location.street + " " +  enrollment.location.postNumber + " " + enrollment.location.county;
-                            db.collection("mission").findOne({"_id" : ObjectId(enrollment.missionId)}, function(err, mission) {
-                                if (err) throw err;
-                                if (mission){ 
-                                    console.log(mission.missionId);
-                                    frivillig.MissionName = mission.title;
-                                }
-                            });
+                    currentOrgs = [];
+                   
+                        //important : while creating webhooks from UI, also insert org district and name in webhook table, simplies querying
+                        db.collection("webhook").find({"organizationId" : ObjectId(enrollment.organizationId)}, function(err, webhooks) {
+                            if (err) throw err;
+                            if (webhooks){
+                                webhooks.forEach(function(entry) {
+                                    currentWebhooks.push(entry);
+                                }); 
+                            }
+                           
+                            //if webhooks configured for given org
+                            if(currentWebhooks.length > -1){
+                                var orgDistrict = createSecureContext[0].orgDistrict;
+                                frivillig.FirstName = enrollment.name;
+                                frivillig.Email = enrollment.email;
+                                frivillig.MobilePhone = enrollment.phoneNumber;
+                                frivillig.AddressLine1 = enrollment.location.street + " " +  enrollment.location.postNumber + " " + enrollment.location.county;
+                                
+                                //this will return organisation districts. So we need to find actual org by comparing current org name 
+                                //with district org 
+                                var options = {
+                                    method: 'GET',
+                                    url: 'https://dibaservicestest.rodekors.no/webapi/api/district',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'crmaccesstoken': 'mup38/AiZfjFJTcy4FoqAg=='
+                                    }
+                                };
+                                request(options, function (err, res, orgs) {
+                                    if (err) {
+                                    console.log('Error :', err);
+                                    return;
+                                    }
+                                    if (orgs){
+                                        orgs.forEach(function(entry) {
+                                            currentOrgs.push(entry);
+                                        }); 
+                                    }
 
-                            var objectToPost = JSON.stringify(frivillig);
-                            postdata(objectToPost);
-                        }
+                                    
+                                    //extract org name from id compare it to current org, if match is found, use current crm id 
+                                    if(currentOrgs.length > -1){
+                                        var orgDistrict = currentOrgs.find(o => o.Name.includes(orgDistrict));
+                                        if(orgDistrict != null && orgDistrict.length > 0){
+                                            db.collection("mission").findOne({"_id" : ObjectId(enrollment.missionId)}, function(err, mission) {
+                                                if (err) throw err;
+                                                if (mission){ 
+                                                    console.log(mission.missionId);
+                                                    frivillig.MissionName = mission.title;
+                                                }
+                                            });
+                                            var districtNo = orgDistrict.Number;
+
+                                            var options = {
+                                                method: 'GET',
+                                                url: 'https://dibaservicestest.rodekors.no/webapi/api/union/getallunionindistrict/' + districtNo,
+                                                headers: {
+                                                    'Content-Type': 'application/json',
+                                                    'crmaccesstoken': 'mup38/AiZfjFJTcy4FoqAg=='
+                                                }
+                                            };
+                                            localOrgs = [];
+                                            request(options, function (err, res, result) {
+                                                if (err) {
+                                                console.log('Error :', err);
+                                                return;
+                                                }
+                                                localOrgs.forEach(function(entry) {
+                                                    localOrgs.push(entry);
+                                                }); 
+                                                if(localOrgs.length > 0 ){
+                                                    var localOrg = localOrgs.find(o => o.Name.includes(orgDistrict));
+                                                    if(localOrg != null && localOrg.length > 0){
+                                                        frivillig.UnionId = localOrg[0].CrmId;
+                                                        var objectToPost = JSON.stringify(frivillig);
+                                                        postdata(objectToPost);
+                                                    }
+                                                }
+                                               
+                                        });
+                                        }
+                                    }
+                                    
+                                       
+                                  
+                                    
+
+                            });
+                            }
+                        
+                    
                     });
+                
    
                 }
                 
@@ -118,12 +213,13 @@ MongoClient.connect(connstr,{ useNewUrlParser: true })
           
           request(options, function (err, res, body) {
             if (err) {
-              console.log('Error :', err)
-              return
+              console.log('Error :', err);
+              return;
             }
-            console.log(' Body :', body)
+            console.log(' Body :', body);
           
           });
-    }
+    };
+
 
     

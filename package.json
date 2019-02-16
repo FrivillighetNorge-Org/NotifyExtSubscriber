@@ -1,15 +1,12 @@
 {
-    "name": "frivillig-notifyextsubscriber",
-    "version": "1.0.0",
-    "description": "Notifies third parties of any new subscribers",
-    "main": "index.js",
-    "scripts": {
-     
-    },
-    "keywords": [
-      "Frivillig.no"
-    ],
-    "author": "Anil Dhiman",
-    "license": "ISC"
-  }
-  
+  "name": "frivillig-notifyextsubscriber",
+  "version": "1.0.0",
+  "description": "Notifies third parties of any new subscribers",
+  "main": "index.js",
+  "scripts": {},
+  "keywords": [
+    "Frivillig.no"
+  ],
+  "author": "Anil Dhiman",
+  "license": "ISC"
+}

@@ -8,8 +8,9 @@ frivillig = {
     Comments:null,
     CaseTypeCode:-1,
     CaseOrigion:-1,
-    MissionName:null
-}
+    MissionName:null,
+    UnionId:null
+};
     
 
 
