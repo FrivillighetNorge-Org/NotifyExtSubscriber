@@ -1,4 +1,4 @@
-frivillig = {
+service = {
     UserInfo : {
         FirstName: null,
         LastName: null,
@@ -15,4 +15,4 @@ frivillig = {
     }
 };
 
-module.exports = frivillig;
+module.exports = service;
